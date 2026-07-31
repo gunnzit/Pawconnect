@@ -1,35 +1,44 @@
 import { NextResponse } from "next/server";
-import Razorpay from "razorpay";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateUser } from "@/lib/auth";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+const statusSchema = z.object({
+  status: z.enum(["ACCEPTED", "DECLINED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),
+});
+
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const user = await getOrCreateUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const booking = await prisma.booking.findUnique({ where: { id: params.id } });
-  if (!booking || booking.ownerId !== user.id) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  if (booking.status !== "ACCEPTED") {
-    return NextResponse.json({ error: "Booking not accepted yet" }, { status: 400 });
+  const body = await req.json();
+  const parsed = statusSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID!,
-    key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  const booking = await prisma.booking.findUnique({
+    where: { id: resolvedParams.id },
+    include: { provider: true },
+  });
+  if (!booking) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const isProvider = booking.provider.userId === user.id;
+  const isOwner = booking.ownerId === user.id;
+  if (!isProvider && !isOwner) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Owners can only cancel; providers can accept/decline/progress/complete
+  if (isOwner && !isProvider && parsed.data.status !== "CANCELLED") {
+    return NextResponse.json({ error: "Owners may only cancel" }, { status: 403 });
+  }
+
+  const updated = await prisma.booking.update({
+    where: { id: resolvedParams.id },
+    data: { status: parsed.data.status },
   });
 
-  const order = await razorpay.orders.create({
-    amount: booking.priceAmount, // paise
-    currency: "INR",
-    receipt: booking.id,
-  });
-
-  await prisma.booking.update({
-    where: { id: booking.id },
-    data: { razorpayOrderId: order.id },
-  });
-
-  return NextResponse.json({ orderId: order.id, amount: order.amount, keyId: process.env.RAZORPAY_KEY_ID });
+  return NextResponse.json(updated);
 }

@@ -3,11 +3,12 @@ import Razorpay from "razorpay";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateUser } from "@/lib/auth";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const user = await getOrCreateUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const booking = await prisma.booking.findUnique({ where: { id: params.id } });
+  const booking = await prisma.booking.findUnique({ where: { id: resolvedParams.id } });
   if (!booking || booking.ownerId !== user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
