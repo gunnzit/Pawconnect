@@ -64,3 +64,11 @@ export async function POST(req: Request) {
       ownerId: user.id,
       providerId: provider.id,
       petId: pet.id,
+      startTime: start,
+      endTime: end,
+      priceAmount,
+    },
+  });
+
+  return NextResponse.json(booking, { status: 201 });
+}
