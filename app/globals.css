@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Reference-matched palette: deep maroon header fading into magenta body,
+     warm orange as the single action accent. */
+  --header-dark: #1a0510;
+  --header-mid: #4a0a26;
+  --body-pink: #c81456;
+  --body-pink-deep: #a30f47;
+  --accent-orange: #ff7a1a;
+  --accent-orange-dark: #e56600;
+  --card-dark: rgba(0, 0, 0, 0.22);
+  --card-dark-border: rgba(255, 255, 255, 0.12);
+  --ink: #1f2933;
+  --muted: #6b7280;
+  --bg: #fffaf5;
+  --card: #ffffff;
+  --border: #f0e4d8;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.btn-primary {
+  background: var(--accent-orange);
+  color: white;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+.btn-primary:hover {
+  background: var(--accent-orange-dark);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+/* Home screen (reference-matched) */
+.home-hero {
+  background: linear-gradient(180deg, var(--header-dark) 0%, var(--header-mid) 40%, var(--body-pink) 75%, var(--body-pink-deep) 100%);
+  color: white;
+}
+
+.home-card {
+  background: var(--card-dark);
+  border: 1px solid var(--card-dark-border);
+  border-radius: 1rem;
+  color: white;
+}
+
+.chip {
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+  z-index: 50;
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.bottom-nav a.active {
+  color: var(--accent-orange);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
