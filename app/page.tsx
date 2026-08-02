@@ -1,59 +1,10 @@
-import Link from "next/link";
-import { Show } from "@clerk/nextjs";
+import { getOrCreateUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import PetsClient from "@/components/PetsClient";
 
-export default function Home() {
-  return (
-    <main className="max-w-5xl mx-auto px-6 py-16">
-      <nav className="flex justify-between items-center mb-16">
-        <span className="text-xl font-extrabold" style={{ color: "var(--brand)" }}>
-          🐾 PawConnect
-        </span>
-        <div className="flex gap-4 items-center">
-          <Show when="signed-out">
-            <Link href="/sign-in" className="text-sm font-medium">Sign in</Link>
-            <Link href="/sign-up" className="btn-primary text-sm">Get started</Link>
-          </Show>
-          <Show when="signed-in">
-            <Link href="/owner/dashboard" className="btn-primary text-sm">Dashboard</Link>
-          </Show>
-        </div>
-      </nav>
+export default async function PetsPage() {
+  const user = await getOrCreateUser();
+  if (!user) redirect("/sign-in");
 
-      <section className="text-center mb-20">
-        <h1 className="text-5xl font-extrabold mb-4 leading-tight">
-          Welcome, <span style={{ fontFamily: "cursive", color: "var(--accent-orange, #ff7a1a)" }}>pet parent!</span>
-        </h1>
-        <p className="text-lg mb-8" style={{ color: "var(--muted)" }}>
-          Verified pet care providers near you — plus we keep track of vaccine due dates so you never forget.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Link href="/sign-up" className="btn-primary">Find a walker</Link>
-          <Link href="/provider/onboarding" className="btn-primary" style={{ background: "var(--ink)" }}>
-            Become a provider
-          </Link>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card">
-          <h3 className="font-bold mb-2">🚶 Walking</h3>
-          <p className="text-sm" style={{ color: "var(--muted)" }}>
-            Live GPS tracking and a report card after every walk.
-          </p>
-        </div>
-        <div className="card">
-          <h3 className="font-bold mb-2">🏠 Sitting</h3>
-          <p className="text-sm" style={{ color: "var(--muted)" }}>
-            In-home or at the provider's place, with daily check-in photos.
-          </p>
-        </div>
-        <div className="card">
-          <h3 className="font-bold mb-2">💉 Vaccine Reminders</h3>
-          <p className="text-sm" style={{ color: "var(--muted)" }}>
-            Never miss a due date — we track it and notify you.
-          </p>
-        </div>
-      </section>
-    </main>
-  );
+  return <PetsClient />;
 }

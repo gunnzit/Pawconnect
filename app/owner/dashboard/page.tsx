@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -49,25 +50,33 @@ export default async function OwnerDashboard() {
           </button>
         </div>
 
-        {/* Category tabs */}
+        {/* Category tabs — real photos */}
         <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1">
-          <Link href="/owner/dashboard" className="home-card flex flex-col items-center justify-center gap-1 px-5 py-3 shrink-0" style={{ background: "rgba(255,255,255,0.16)", borderColor: "var(--accent-orange)" }}>
-            <span className="text-2xl">🐕</span>
+          <Link href="/owner/dashboard" className="flex flex-col items-center gap-1 shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden relative" style={{ border: "2px solid var(--accent-orange)" }}>
+              <Image src="/images/tab-walking.jpg" alt="Walking" fill sizes="64px" className="object-cover" />
+            </div>
             <span className="text-xs font-bold">Walking</span>
           </Link>
-          <Link href="/book?service=SITTING" className="home-card flex flex-col items-center justify-center gap-1 px-5 py-3 shrink-0 relative">
-            <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: "var(--accent-orange)" }}>
+          <Link href="/book?service=SITTING" className="flex flex-col items-center gap-1 shrink-0 relative">
+            <span className="absolute -top-1 left-1/2 -translate-x-1/2 z-10 text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ background: "var(--accent-orange)" }}>
               Today
             </span>
-            <span className="text-2xl">🏠</span>
+            <div className="w-16 h-16 rounded-2xl overflow-hidden relative" style={{ border: "2px solid rgba(255,255,255,0.25)" }}>
+              <Image src="/images/tab-sitting.jpg" alt="Sitting" fill sizes="64px" className="object-cover" />
+            </div>
             <span className="text-xs font-semibold text-white/80">Sitting</span>
           </Link>
-          <Link href="/owner/pets" className="home-card flex flex-col items-center justify-center gap-1 px-5 py-3 shrink-0">
-            <span className="text-2xl">💉</span>
+          <Link href="/owner/pets" className="flex flex-col items-center gap-1 shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden relative" style={{ border: "2px solid rgba(255,255,255,0.25)" }}>
+              <Image src="/images/tab-vaccines.webp" alt="Vaccines" fill sizes="64px" className="object-cover" />
+            </div>
             <span className="text-xs font-semibold text-white/80">Vaccines</span>
           </Link>
-          <Link href="/owner/bookings" className="home-card flex flex-col items-center justify-center gap-1 px-5 py-3 shrink-0">
-            <span className="text-2xl">📅</span>
+          <Link href="/owner/bookings" className="flex flex-col items-center gap-1 shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden relative" style={{ border: "2px solid rgba(255,255,255,0.25)" }}>
+              <Image src="/images/tab-community.jpg" alt="Community" fill sizes="64px" className="object-cover" />
+            </div>
             <span className="text-xs font-semibold text-white/80">Bookings</span>
           </Link>
         </div>
@@ -87,57 +96,52 @@ export default async function OwnerDashboard() {
         </div>
       </div>
 
-      {/* ===== Welcome banner (still on the pink field) ===== */}
+      {/* ===== Welcome banner ===== */}
       <div className="home-hero px-5 pt-8 pb-8 -mt-1" style={{ background: "linear-gradient(180deg, var(--body-pink) 0%, var(--body-pink-deep) 100%)" }}>
         <h1 className="text-3xl font-extrabold text-white mb-6">
           Welcome, <span style={{ fontFamily: "cursive", color: "#ffe08a" }}>{firstName || "pet parent"}!</span>
         </h1>
 
-        {/* Promo grid */}
+        {/* Promo grid — real photos */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <Link href="/owner/pets" className="home-card p-4 flex flex-col justify-between" style={{ minHeight: 150 }}>
-            <div>
-              <p className="font-bold text-sm">🐾 Add pets</p>
-              <p className="text-xs text-white/70 mt-1">Track vaccines &amp; profiles</p>
+          <Link href="/owner/pets" className="rounded-2xl overflow-hidden relative" style={{ minHeight: 220 }}>
+            <Image src="/images/hero-large.jpg" alt="Add your pets" fill sizes="50vw" className="object-cover" />
+            <div className="absolute inset-0 flex flex-col justify-end p-4" style={{ background: "linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.75) 100%)" }}>
+              <p className="font-bold text-sm text-white">🐾 Add pets</p>
+              <p className="text-xs text-white/80 mt-1">Track vaccines &amp; profiles</p>
             </div>
-            <span className="text-3xl self-end">🐶</span>
           </Link>
           <div className="flex flex-col gap-3">
-            <Link href="/book" className="home-card p-3 flex justify-between items-center" style={{ minHeight: 70 }}>
-              <div>
+            <Link href="/book" className="rounded-2xl overflow-hidden relative" style={{ minHeight: 102 }}>
+              <Image src="/images/promo-first-walk.jpg" alt="First walk" fill sizes="50vw" className="object-cover" />
+              <div className="absolute inset-0 flex flex-col justify-end p-3" style={{ background: "linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.7) 100%)" }}>
                 <p className="font-bold text-xs" style={{ color: "#ffe08a" }}>First walk</p>
-                <p className="text-[11px] text-white/70">Free trial</p>
+                <p className="text-[11px] text-white/80">Free trial</p>
               </div>
-              <span className="text-2xl">🚶</span>
             </Link>
-            <Link href="/owner/pets" className="home-card p-3 flex justify-between items-center" style={{ minHeight: 70 }}>
-              <div>
+            <Link href="/owner/pets" className="rounded-2xl overflow-hidden relative" style={{ minHeight: 102 }}>
+              <Image src="/images/promo-vaccine-reminder.jpg" alt="Vaccine reminders" fill sizes="50vw" className="object-cover" />
+              <div className="absolute inset-0 flex flex-col justify-end p-3" style={{ background: "linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.7) 100%)" }}>
                 <p className="font-bold text-xs" style={{ color: "#ffe08a" }}>Get reminded</p>
-                <p className="text-[11px] text-white/70">On vaccines</p>
+                <p className="text-[11px] text-white/80">On vaccines</p>
               </div>
-              <span className="text-2xl">💉</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* ===== Bolt-style instant banner ===== */}
+      {/* ===== Instant walker banner ===== */}
       <div className="px-5 -mt-4 relative z-10 mb-5">
-        <div
-          className="rounded-2xl p-5 flex justify-between items-center text-white"
-          style={{ background: "linear-gradient(120deg, #4a0a26, #7a0f38)" }}
-        >
-          <div>
-            <p className="font-bold text-base mb-1">
+        <Link href="/book" className="block rounded-2xl overflow-hidden relative" style={{ minHeight: 170 }}>
+          <Image src="/images/banner-instant-walk.jpg" alt="Instant walker" fill sizes="100vw" className="object-cover" />
+          <div className="absolute inset-0 flex flex-col justify-center p-5" style={{ background: "linear-gradient(90deg, rgba(20,5,15,0.85) 40%, transparent 90%)" }}>
+            <p className="font-bold text-base mb-1 text-white">
               Instant <span style={{ color: "var(--accent-orange)" }}>⚡</span> | Walker in 15 mins!
             </p>
-            <p className="text-xs text-white/70 mb-3 max-w-[180px]">Nearby verified walkers, ready right now.</p>
-            <Link href="/book" className="btn-primary text-xs inline-block">
-              BOOK NOW
-            </Link>
+            <p className="text-xs text-white/80 mb-3 max-w-[180px]">Nearby verified walkers, ready right now.</p>
+            <span className="btn-primary text-xs inline-block w-fit">BOOK NOW</span>
           </div>
-          <span className="text-5xl">🐕‍🦺</span>
-        </div>
+        </Link>
       </div>
 
       {/* ===== Vaccine due strip (real data) ===== */}
@@ -154,28 +158,33 @@ export default async function OwnerDashboard() {
         </div>
       )}
 
-      {/* ===== Provider listing ===== */}
+      {/* ===== Provider listing — real photos rotated across cards ===== */}
       <div className="px-5 mb-5">
         <h2 className="font-bold text-base mb-3">Verified walkers near you</h2>
         {providers.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--muted)" }}>No verified providers yet — check back soon.</p>
         ) : (
           <div className="flex gap-3 overflow-x-auto no-scrollbar">
-            {providers.map((p) => (
-              <Link href="/book" key={p.id} className="card shrink-0 relative" style={{ width: 150 }}>
-                <span className="absolute top-3 right-3">🤍</span>
-                <div className="w-full h-20 rounded-xl mb-2 flex items-center justify-center text-3xl" style={{ background: "var(--bg)" }}>
-                  🐾
-                </div>
-                <p className="font-semibold text-sm truncate">{p.user.name}</p>
-                <p className="text-xs" style={{ color: "var(--muted)" }}>⭐ {p.ratingAvg.toFixed(1)}</p>
-              </Link>
-            ))}
+            {providers.map((p, i) => {
+              const photos = ["/images/tab-walking.jpg", "/images/tab-sitting.jpg", "/images/tab-community.jpg", "/images/promo-first-walk.jpg"];
+              return (
+                <Link href="/book" key={p.id} className="shrink-0 rounded-2xl overflow-hidden bg-white shadow-sm" style={{ width: 150 }}>
+                  <div className="w-full h-24 relative">
+                    <Image src={photos[i % photos.length]} alt={p.user.name} fill sizes="150px" className="object-cover" />
+                    <span className="absolute top-2 right-2 text-lg">🤍</span>
+                  </div>
+                  <div className="p-2">
+                    <p className="font-semibold text-sm truncate">{p.user.name}</p>
+                    <p className="text-xs" style={{ color: "var(--muted)" }}>⭐ {p.ratingAvg.toFixed(1)}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* ===== Recent bookings (real data, kept from before) ===== */}
+      {/* ===== Recent bookings (real data) ===== */}
       <div className="px-5 mb-5">
         <div className="flex justify-between items-center mb-3">
           <h2 className="font-bold text-base">Recent bookings</h2>
