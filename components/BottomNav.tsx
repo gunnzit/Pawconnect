@@ -18,8 +18,17 @@ export default function BottomNav() {
       {NAV_ITEMS.map((item) => {
         const active = pathname === item.href.split("?")[0];
         return (
-          <Link key={item.href} href={item.href} className={active ? "active" : ""}>
-            <span style={{ fontSize: "1.1rem" }}>{item.icon}</span>
+          <Link key={item.href} href={item.href} className={`tap-scale ${active ? "active" : ""}`}>
+            <span
+              style={{
+                fontSize: "1.1rem",
+                display: "inline-block",
+                transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                transform: active ? "translateY(-2px) scale(1.15)" : "translateY(0) scale(1)",
+              }}
+            >
+              {item.icon}
+            </span>
             {item.label}
           </Link>
         );

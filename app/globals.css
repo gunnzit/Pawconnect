@@ -100,3 +100,91 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ===== Motion / life ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseSoft {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+@keyframes shimmerSweep {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,122,26,0.45); }
+  50% { box-shadow: 0 0 0 8px rgba(255,122,26,0); }
+}
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-fade-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-pulse-soft {
+  animation: pulseSoft 1.7s ease-in-out infinite;
+}
+.animate-glow {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.tap-scale {
+  transition: transform 0.15s ease;
+}
+.tap-scale:active {
+  transform: scale(0.94);
+}
+
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.14);
+}
+
+.img-zoom {
+  overflow: hidden;
+}
+.img-zoom img {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.img-zoom:hover img {
+  transform: scale(1.1);
+}
+
+.shimmer-btn {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 35%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+  animation: shimmerSweep 2.4s ease-in-out infinite;
+}
+
+.tab-icon-float:hover {
+  animation: floatIcon 0.6s ease-in-out infinite;
+}
+
+.search-focus {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.search-focus:focus-within {
+  box-shadow: 0 0 0 3px rgba(255,122,26,0.35);
+  transform: translateY(-1px);
+}
+
+.chip-pulse {
+  animation: pulseSoft 2s ease-in-out infinite;
+}
