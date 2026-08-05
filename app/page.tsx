@@ -1,7 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Show } from "@clerk/nextjs";
-import { PawPrint, Home as HomeIcon, Syringe, ShoppingBag, ChevronRight } from "lucide-react";
+import { PawPrint, Scissors, Stethoscope, Home as HomeIcon, ShoppingBag } from "lucide-react";
+
+const NEEDS = [
+  { label: "Walk", sub: "Adventure walks", icon: PawPrint, href: "/book?service=WALKING", soon: false },
+  { label: "Groom", sub: "Spa sessions", icon: Scissors, href: "#", soon: true },
+  { label: "Vet", sub: "Vaccine care", icon: Stethoscope, href: "/owner/pets", soon: false },
+  { label: "Sit", sub: "Home staycation", icon: HomeIcon, href: "/book?service=SITTING", soon: false },
+  { label: "Shop", sub: "Accessories", icon: ShoppingBag, href: "/accessories", soon: false },
+];
 
 export default function Home() {
   return (
@@ -22,86 +30,60 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ===== Hero ===== */}
-      <section className="max-w-5xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center mb-16 animate-fade-up">
-        <div>
-          <h1 className="text-5xl font-bold mb-4 leading-tight">
-            Everything your dog needs, <span style={{ color: "var(--tan)" }}>in one place.</span>
-          </h1>
-          <p className="text-base mb-8" style={{ color: "var(--muted)" }}>
-            Verified walkers and sitters, vaccine reminders that never let you forget, and the everyday accessories your pet actually uses.
-          </p>
-          <div className="flex gap-3">
-            <Link href="/sign-up" className="btn-primary">Get started</Link>
-            <Link href="/provider/onboarding" className="btn-secondary">Become a provider</Link>
-          </div>
-        </div>
-        <div className="img-frame relative shadow-sm" style={{ minHeight: 340 }}>
-          <Image src="/images/banner-instant-walk.jpg" alt="Happy dog on a walk" fill sizes="500px" className="object-cover" priority />
-        </div>
-      </section>
-
-      {/* ===== Category mix — the "everything" section ===== */}
-      <section className="max-w-5xl mx-auto px-6 mb-16">
-        <h2 className="text-2xl font-bold mb-6">What you'll find here</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link href="/sign-up" className="card tap-scale flex flex-col gap-3">
-            <PawPrint size={22} color="var(--tan)" />
-            <div>
-              <p className="font-semibold text-sm">Walking</p>
-              <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Verified walkers nearby</p>
-            </div>
-          </Link>
-          <Link href="/sign-up" className="card tap-scale flex flex-col gap-3">
-            <HomeIcon size={22} color="var(--tan)" />
-            <div>
-              <p className="font-semibold text-sm">Sitting</p>
-              <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>In-home or drop-off care</p>
-            </div>
-          </Link>
-          <Link href="/sign-up" className="card tap-scale flex flex-col gap-3">
-            <Syringe size={22} color="var(--tan)" />
-            <div>
-              <p className="font-semibold text-sm">Vaccines</p>
-              <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Never miss a due date</p>
-            </div>
-          </Link>
-          <Link href="/accessories" className="card tap-scale flex flex-col gap-3">
-            <ShoppingBag size={22} color="var(--tan)" />
-            <div>
-              <p className="font-semibold text-sm">Accessories</p>
-              <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Collars, bowls &amp; more</p>
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      {/* ===== Accessories teaser strip ===== */}
-      <section className="max-w-5xl mx-auto px-6 mb-16">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">Shop accessories</h2>
-          <Link href="/accessories" className="text-sm font-medium flex items-center gap-1 tap-scale" style={{ color: "var(--tan-dark, var(--tan))" }}>
-            Browse all <ChevronRight size={14} />
-          </Link>
-        </div>
-        <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
-          Everyday essentials for your pet, picked to last.
+      {/* ===== Hero: "My pet needs..." ===== */}
+      <section className="max-w-5xl mx-auto px-6 mb-6 animate-fade-up">
+        <h1 className="text-4xl md:text-5xl font-bold mb-2 leading-tight">
+          My pet needs<span style={{ color: "var(--tan)" }}>…</span>
+        </h1>
+        <p className="text-base mb-8" style={{ color: "var(--muted)" }}>
+          One tap. Done.
         </p>
-        <Link href="/accessories" className="btn-secondary tap-scale inline-block">
-          Explore accessories
-        </Link>
       </section>
 
-      {/* ===== Photo strip ===== */}
-      <section className="max-w-5xl mx-auto px-6 grid grid-cols-3 gap-4">
-        <div className="img-frame relative" style={{ height: 160 }}>
-          <Image src="/images/tab-walking.jpg" alt="" fill sizes="300px" className="object-cover" />
+      <section className="max-w-5xl mx-auto px-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {NEEDS.map((need) => {
+            const Icon = need.icon;
+            return (
+              <Link
+                key={need.label}
+                href={need.soon ? "#" : need.href}
+                className={`card flex flex-col items-center text-center gap-3 py-8 ${need.soon ? "" : "tap-scale"}`}
+                style={{ opacity: need.soon ? 0.55 : 1, cursor: need.soon ? "default" : "pointer" }}
+                onClick={(e) => { if (need.soon) e.preventDefault(); }}
+              >
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center"
+                  style={{ background: "var(--cream)" }}
+                >
+                  <Icon size={24} color="var(--tan)" strokeWidth={1.75} />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{need.label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
+                    {need.soon ? "Coming soon" : need.sub}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
-        <div className="img-frame relative" style={{ height: 160 }}>
-          <Image src="/images/tab-sitting.jpg" alt="" fill sizes="300px" className="object-cover" />
-        </div>
-        <div className="img-frame relative" style={{ height: 160 }}>
-          <Image src="/images/tab-community.jpg" alt="" fill sizes="300px" className="object-cover" />
+      </section>
+
+      {/* ===== Hero photo moment ===== */}
+      <section className="max-w-5xl mx-auto px-6 mb-16 animate-fade-up">
+        <div className="img-frame relative shadow-sm" style={{ minHeight: 320 }}>
+          <Image src="/images/banner-instant-walk.jpg" alt="Happy dog on a walk" fill sizes="900px" className="object-cover" priority />
+          <div
+            className="absolute inset-0 flex flex-col justify-end p-8"
+            style={{ background: "linear-gradient(180deg, transparent 40%, rgba(43,29,20,0.75) 100%)" }}
+          >
+            <h2 className="text-white text-2xl font-bold mb-2">Verified people. Real trust.</h2>
+            <p className="text-white/80 text-sm mb-4 max-w-md">
+              Every provider is verified, rated, and rehired by real pet parents.
+            </p>
+            <Link href="/sign-up" className="btn-primary w-fit">Get started</Link>
+          </div>
         </div>
       </section>
     </main>

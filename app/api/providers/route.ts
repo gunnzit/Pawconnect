@@ -24,7 +24,10 @@ export async function GET(req: Request) {
       ...(service ? { servicesOffered: { has: service as "WALKING" | "SITTING" } } : {}),
       ...(pin ? { serviceAreaPin: pin } : {}),
     },
-    include: { user: { select: { name: true } } },
+    include: {
+      user: { select: { name: true } },
+      _count: { select: { bookings: { where: { status: "COMPLETED" } } } },
+    },
     orderBy: { ratingAvg: "desc" },
   });
   return NextResponse.json(providers);
