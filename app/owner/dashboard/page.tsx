@@ -1,92 +1,284 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Show } from "@clerk/nextjs";
-import { PawPrint, Scissors, Stethoscope, Home as HomeIcon, ShoppingBag } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { getOrCreateUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import BottomNav from "@/components/BottomNav";
+import { Search, Syringe, Home as HomeIcon, PawPrint, ChevronRight, Star, ShieldCheck, RotateCcw, ShoppingBag } from "lucide-react";
 
-const NEEDS = [
-  { label: "Walk", sub: "Adventure walks", icon: PawPrint, href: "/book?service=WALKING", soon: false },
-  { label: "Groom", sub: "Spa sessions", icon: Scissors, href: "#", soon: true },
-  { label: "Vet", sub: "Vaccine care", icon: Stethoscope, href: "/owner/pets", soon: false },
-  { label: "Sit", sub: "Home staycation", icon: HomeIcon, href: "/book?service=SITTING", soon: false },
-  { label: "Shop", sub: "Accessories", icon: ShoppingBag, href: "/accessories", soon: false },
-];
+export default async function OwnerDashboard() {
+  const user = await getOrCreateUser();
+  if (!user) redirect("/sign-in");
 
-export default function Home() {
+  const [pets, bookings, allBookingsForRebook, upcomingVaccines, providers, bestSellers] = await Promise.all([
+    prisma.pet.findMany({ where: { ownerId: user.id } }),
+    prisma.booking.findMany({
+      where: { ownerId: user.id },
+      include: { provider: { include: { user: true } }, pet: true },
+      orderBy: { startTime: "desc" },
+      take: 4,
+    }),
+    prisma.booking.findMany({
+      where: { ownerId: user.id },
+      include: { provider: { include: { user: true } }, pet: true },
+      orderBy: { startTime: "desc" },
+      take: 20,
+    }),
+    prisma.vaccination.findMany({
+      where: { pet: { ownerId: user.id }, nextDueDate: { lte: new Date(Date.now() + 30 * 86400000) } },
+      include: { pet: true },
+      orderBy: { nextDueDate: "asc" },
+    }),
+    prisma.provider.findMany({
+      where: { verified: true },
+      include: {
+        user: { select: { name: true } },
+        _count: { select: { bookings: { where: { status: "COMPLETED" } } } },
+      },
+      orderBy: { ratingAvg: "desc" },
+      take: 4,
+    }),
+    prisma.product.findMany({
+      where: { active: true },
+      orderBy: { orderItems: { _count: "desc" } },
+      take: 4,
+    }),
+  ]);
+
+  // Dedupe to most-recent booking per (provider, service type) for quick "Book again"
+  const seen = new Set<string>();
+  const rebookOptions = allBookingsForRebook.filter((b) => {
+    const key = `${b.providerId}-${b.type}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 4);
+
+  const firstName = user.name.split(" ")[0];
+  const photos = ["/images/tab-walking.jpg", "/images/tab-sitting.jpg", "/images/tab-community.jpg", "/images/promo-first-walk.jpg"];
+  const PRODUCT_ICON_EMOJI: Record<string, string> = {
+    leash: "🦮", collar: "🔵", bowl: "🥣", toy: "🦴", bed: "🛏️", carrier: "🧳",
+  };
+
   return (
-    <main className="pb-16" style={{ background: "var(--cream)" }}>
-      {/* ===== Nav ===== */}
-      <nav className="flex justify-between items-center px-6 py-5 max-w-5xl mx-auto">
-        <span className="text-lg font-bold flex items-center gap-2">
-          <PawPrint size={20} color="var(--tan)" /> PawConnect
-        </span>
-        <div className="flex gap-3 items-center">
-          <Show when="signed-out">
-            <Link href="/sign-in" className="text-sm font-medium">Sign in</Link>
-            <Link href="/sign-up" className="btn-primary text-sm">Get started</Link>
-          </Show>
-          <Show when="signed-in">
-            <Link href="/owner/dashboard" className="btn-primary text-sm">Dashboard</Link>
-          </Show>
-        </div>
-      </nav>
-
-      {/* ===== Hero: "My pet needs..." ===== */}
-      <section className="max-w-5xl mx-auto px-6 mb-6 animate-fade-up">
-        <h1 className="text-4xl md:text-5xl font-bold mb-2 leading-tight">
-          My pet needs<span style={{ color: "var(--tan)" }}>…</span>
-        </h1>
-        <p className="text-base mb-8" style={{ color: "var(--muted)" }}>
-          One tap. Done.
-        </p>
-      </section>
-
-      <section className="max-w-5xl mx-auto px-6 mb-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {NEEDS.map((need) => {
-            const Icon = need.icon;
-            const Wrapper = need.soon ? "div" : Link;
-            const wrapperProps = need.soon ? {} : { href: need.href };
-            return (
-              <Wrapper
-                key={need.label}
-                {...(wrapperProps as any)}
-                className={`card flex flex-col items-center text-center gap-3 py-8 ${need.soon ? "" : "tap-scale"}`}
-                style={{ opacity: need.soon ? 0.55 : 1, cursor: need.soon ? "default" : "pointer" }}
-              >
-                <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center"
-                  style={{ background: "var(--cream)" }}
-                >
-                  <Icon size={24} color="var(--tan)" strokeWidth={1.75} />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">{need.label}</p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
-                    {need.soon ? "Coming soon" : need.sub}
-                  </p>
-                </div>
-              </Wrapper>
-            );
-          })}
-        </div>
-      </section>
-
+    <main className="pb-28 max-w-2xl mx-auto">
       {/* ===== Hero photo moment ===== */}
-      <section className="max-w-5xl mx-auto px-6 mb-16 animate-fade-up">
-        <div className="img-frame relative shadow-sm" style={{ minHeight: 320 }}>
-          <Image src="/images/banner-instant-walk.jpg" alt="Happy dog on a walk" fill sizes="900px" className="object-cover" priority />
-          <div
-            className="absolute inset-0 flex flex-col justify-end p-8"
-            style={{ background: "linear-gradient(180deg, transparent 40%, rgba(43,29,20,0.75) 100%)" }}
-          >
-            <h2 className="text-white text-2xl font-bold mb-2">Verified people. Real trust.</h2>
-            <p className="text-white/80 text-sm mb-4 max-w-md">
-              Every provider is verified, rated, and rehired by real pet parents.
-            </p>
-            <Link href="/sign-up" className="btn-primary w-fit">Get started</Link>
+      <div className="relative w-full animate-fade-up" style={{ height: 280 }}>
+        <Image src="/images/banner-instant-walk.jpg" alt="" fill sizes="700px" className="object-cover" priority />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(43,29,20,0.15) 0%, rgba(43,29,20,0.55) 100%)" }} />
+        <div className="absolute inset-0 flex flex-col justify-end px-6 pb-8">
+          <p className="text-white/80 text-sm font-medium mb-1">Good to see you,</p>
+          <h1 className="text-white text-4xl font-bold">{firstName || "pet parent"}</h1>
+        </div>
+      </div>
+
+      {/* ===== Search ===== */}
+      <div className="px-6 -mt-6 relative z-10 animate-fade-up" style={{ animationDelay: "80ms" }}>
+        <div className="bg-white rounded-2xl flex items-center gap-3 px-5 py-4 shadow-sm" style={{ border: "1px solid var(--border)" }}>
+          <Search size={18} color="var(--muted)" />
+          <span className="text-sm" style={{ color: "var(--muted)" }}>Find a walker or sitter nearby</span>
+        </div>
+      </div>
+
+      {/* ===== Pill tabs ===== */}
+      <div className="px-6 mt-6 mb-8 animate-fade-up" style={{ animationDelay: "120ms" }}>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          <Link href="/owner/dashboard" className="pill-tab active tap-scale flex items-center gap-1.5">
+            <PawPrint size={14} /> Adventure Walks
+          </Link>
+          <Link href="/book?service=SITTING" className="pill-tab tap-scale flex items-center gap-1.5">
+            <HomeIcon size={14} /> Home Staycation
+          </Link>
+          <Link href="/owner/pets" className="pill-tab tap-scale flex items-center gap-1.5">
+            <Syringe size={14} /> Vet &amp; Vaccines
+          </Link>
+          <Link href="/owner/bookings" className="pill-tab tap-scale">
+            Bookings
+          </Link>
+        </div>
+      </div>
+
+      {/* ===== Offers — moving carousel ===== */}
+      <div className="mb-8 animate-fade-up overflow-hidden" style={{ animationDelay: "140ms" }}>
+        <div className="marquee-track">
+          {[...Array(2)].flatMap((_, dup) => [
+            <Link href="/book" key={`walk-${dup}`} className="shrink-0 tap-scale mx-2 rounded-2xl overflow-hidden relative" style={{ width: 260, height: 120 }}>
+              <Image src="/images/promo-first-walk.jpg" alt="First walk free" fill sizes="260px" className="object-cover" />
+              <div className="absolute inset-0 flex flex-col justify-end p-4" style={{ background: "linear-gradient(180deg, transparent 30%, rgba(43,29,20,0.8) 100%)" }}>
+                <p className="text-white font-bold text-sm">First walk, on us</p>
+                <p className="text-white/75 text-xs">New pets get a free trial walk</p>
+              </div>
+            </Link>,
+            <Link href="/accessories" key={`shop-${dup}`} className="shrink-0 tap-scale mx-2 rounded-2xl overflow-hidden relative" style={{ width: 260, height: 120 }}>
+              <Image src="/images/hero-large.jpg" alt="Shop accessories" fill sizes="260px" className="object-cover" />
+              <div className="absolute inset-0 flex flex-col justify-end p-4" style={{ background: "linear-gradient(180deg, transparent 30%, rgba(43,29,20,0.8) 100%)" }}>
+                <p className="text-white font-bold text-sm">Fresh gear for your pet</p>
+                <p className="text-white/75 text-xs">Browse the accessories shop</p>
+              </div>
+            </Link>,
+            <Link href="/owner/pets" key={`vax-${dup}`} className="shrink-0 tap-scale mx-2 rounded-2xl overflow-hidden relative" style={{ width: 260, height: 120 }}>
+              <Image src="/images/promo-vaccine-reminder.jpg" alt="Never miss a vaccine" fill sizes="260px" className="object-cover" />
+              <div className="absolute inset-0 flex flex-col justify-end p-4" style={{ background: "linear-gradient(180deg, transparent 30%, rgba(43,29,20,0.8) 100%)" }}>
+                <p className="text-white font-bold text-sm">Never miss a vaccine</p>
+                <p className="text-white/75 text-xs">We track every due date for you</p>
+              </div>
+            </Link>,
+          ])}
+        </div>
+      </div>
+
+      {/* ===== Book again — real past provider + service combos ===== */}
+      {rebookOptions.length > 0 && (
+        <div className="mb-10 animate-fade-up" style={{ animationDelay: "180ms" }}>
+          <h2 className="text-lg font-bold px-6 mb-4 flex items-center gap-2">
+            <RotateCcw size={18} color="var(--tan)" /> Book again
+          </h2>
+          <div className="flex gap-3 overflow-x-auto no-scrollbar px-6">
+            {rebookOptions.map((b) => (
+              <Link
+                href={`/book?service=${b.type}`}
+                key={b.id}
+                className="card shrink-0 tap-scale flex flex-col justify-between"
+                style={{ width: 180, minHeight: 110 }}
+              >
+                <p className="font-semibold text-sm">{b.type === "WALKING" ? "Adventure Walk" : "Home Staycation"}</p>
+                <div>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>
+                    Last time with {b.provider.user.name}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>for {b.pet.name}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
-      </section>
+      )}
+
+
+      {upcomingVaccines.length > 0 && (
+        <div className="px-6 mb-8 animate-fade-up" style={{ animationDelay: "160ms" }}>
+          <Link href="/owner/pets" className="flex items-center justify-between py-3 px-4 rounded-2xl tap-scale" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <div className="flex items-center gap-3">
+              <Syringe size={16} color="var(--tan-dark, var(--tan))" />
+              <span className="text-sm font-medium">
+                {upcomingVaccines.length} vaccine{upcomingVaccines.length > 1 ? "s" : ""} due this month
+              </span>
+            </div>
+            <ChevronRight size={16} color="var(--muted)" />
+          </Link>
+        </div>
+      )}
+
+      {/* ===== Two quiet promo cards, minimal ===== */}
+      <div className="px-6 mb-10 animate-fade-up" style={{ animationDelay: "200ms" }}>
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/owner/pets" className="card tap-scale flex flex-col justify-between" style={{ minHeight: 130 }}>
+            <PawPrint size={20} color="var(--tan)" />
+            <div>
+              <p className="font-semibold text-sm">Add a pet</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>Track profile &amp; vaccines</p>
+            </div>
+          </Link>
+          <Link href="/book" className="card tap-scale flex flex-col justify-between" style={{ minHeight: 130 }}>
+            <PawPrint size={20} color="var(--tan)" />
+            <div>
+              <p className="font-semibold text-sm">First walk</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>Free trial for new pets</p>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* ===== Providers — clean horizontal list, photo + name + rating only ===== */}
+      <div className="mb-10 animate-fade-up" style={{ animationDelay: "240ms" }}>
+        <div className="flex items-center justify-between px-6 mb-4">
+          <h2 className="text-lg font-bold">Recommended near you</h2>
+          <Link href="/book" className="text-sm font-medium tap-scale" style={{ color: "var(--tan-dark, var(--tan))" }}>
+            See all
+          </Link>
+        </div>
+        {providers.length === 0 ? (
+          <p className="text-sm px-6" style={{ color: "var(--muted)" }}>No verified providers yet.</p>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto no-scrollbar px-6">
+            {providers.map((p, i) => (
+              <Link href="/book" key={p.id} className="shrink-0 tap-scale" style={{ width: 168 }}>
+                <div className="img-frame relative" style={{ height: 130 }}>
+                  <Image src={photos[i % photos.length]} alt={p.user.name} fill sizes="168px" className="object-cover" />
+                  <span
+                    className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold text-white"
+                    style={{ background: "rgba(43,29,20,0.75)" }}
+                  >
+                    <ShieldCheck size={11} /> Verified
+                  </span>
+                </div>
+                <p className="font-semibold text-sm mt-2">{p.user.name}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-1">
+                    <Star size={12} fill="var(--tan)" color="var(--tan)" />
+                    <span className="text-xs" style={{ color: "var(--muted)" }}>{p.ratingAvg.toFixed(1)}</span>
+                  </div>
+                  <span className="text-xs" style={{ color: "var(--muted)" }}>
+                    · {p._count.bookings} walk{p._count.bookings === 1 ? "" : "s"}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ===== Best sellers — real order-count based ranking ===== */}
+      {bestSellers.length > 0 && (
+        <div className="mb-10 animate-fade-up" style={{ animationDelay: "260ms" }}>
+          <div className="flex items-center justify-between px-6 mb-4">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <ShoppingBag size={18} color="var(--tan)" /> Best-selling accessories
+            </h2>
+            <Link href="/accessories" className="text-sm font-medium tap-scale" style={{ color: "var(--tan-dark, var(--tan))" }}>
+              Shop all
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto no-scrollbar px-6">
+            {bestSellers.map((p) => (
+              <Link href="/accessories" key={p.id} className="card shrink-0 tap-scale" style={{ width: 140 }}>
+                <div
+                  className="w-full flex items-center justify-center rounded-xl mb-2"
+                  style={{ height: 70, background: "var(--cream)", fontSize: 28 }}
+                >
+                  {PRODUCT_ICON_EMOJI[p.icon ?? "toy"] ?? "🐾"}
+                </div>
+                <p className="font-semibold text-xs truncate">{p.name}</p>
+                <p className="text-xs mt-0.5 font-bold">₹{(p.price / 100).toFixed(0)}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+
+      <div className="px-6 animate-fade-up" style={{ animationDelay: "280ms" }}>
+        <h2 className="text-lg font-bold mb-4">Recent bookings</h2>
+        {bookings.length === 0 ? (
+          <p className="text-sm" style={{ color: "var(--muted)" }}>Nothing booked yet.</p>
+        ) : (
+          <div>
+            {bookings.map((b, i) => (
+              <div key={b.id} className={`flex justify-between items-center py-4 ${i !== bookings.length - 1 ? "hairline" : ""}`}>
+                <div>
+                  <p className="font-medium text-sm">{b.pet.name} · {b.type === "WALKING" ? "Adventure Walk" : "Home Staycation"}</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>with {b.provider.user.name}</p>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--cream)", color: "var(--chestnut)" }}>
+                  {b.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <BottomNav />
     </main>
   );
 }

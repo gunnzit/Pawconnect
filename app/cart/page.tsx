@@ -1,10 +1,10 @@
 import { getOrCreateUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import PetsClient from "@/components/PetsClient";
+import CartClient from "@/components/CartClient";
 
-export default async function PetsPage() {
+export default async function CartPage() {
   const user = await getOrCreateUser();
   if (!user) redirect("/sign-in");
 
-  return <PetsClient />;
+  return <CartClient />;
 }

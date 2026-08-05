@@ -23,6 +23,10 @@ export async function POST(req: Request) {
       where: { razorpayOrderId: orderId },
       data: { paidAt: new Date() },
     });
+    await prisma.order.updateMany({
+      where: { razorpayOrderId: orderId },
+      data: { paidAt: new Date(), status: "PAID" },
+    });
   }
 
   return NextResponse.json({ received: true });
