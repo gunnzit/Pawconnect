@@ -31,7 +31,7 @@ export default function Home() {
 
       <section className="max-w-5xl mx-auto px-6 mb-6 animate-fade-up">
         <h1 className="text-4xl md:text-5xl font-bold mb-2 leading-tight">
-          My pet needs<span style={{ color: "var(--tan)" }}>…</span>
+          My pet needs<span style={{ color: "var(--tan)" }}>...</span>
         </h1>
         <p className="text-base mb-8" style={{ color: "var(--muted)" }}>
           One tap. Done.
