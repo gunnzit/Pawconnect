@@ -3,45 +3,50 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateUser } from "@/lib/auth";
 
-const updateSchema = z.object({
-  quantity: z.number().int().min(0),
+const addSchema = z.object({
+  productId: z.string(),
+  quantity: z.number().int().positive().default(1),
 });
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ productId: string }> }) {
-  const resolvedParams = await params;
+export async function GET() {
+  const user = await getOrCreateUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const items = await prisma.cartItem.findMany({
+    where: { userId: user.id },
+    include: { product: true },
+    orderBy: { createdAt: "desc" },
+  });
+  return NextResponse.json(items);
+}
+
+export async function POST(req: Request) {
   const user = await getOrCreateUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const parsed = updateSchema.safeParse(body);
+  const parsed = addSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const existing = await prisma.cartItem.findUnique({
-    where: { userId_productId: { userId: user.id, productId: resolvedParams.productId } },
-  });
-  if (!existing) return NextResponse.json({ error: "Not in cart" }, { status: 404 });
-
-  if (parsed.data.quantity === 0) {
-    await prisma.cartItem.delete({ where: { id: existing.id } });
-    return NextResponse.json({ deleted: true });
+  const product = await prisma.product.findUnique({ where: { id: parsed.data.productId } });
+  if (!product || !product.active) {
+    return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
-  const updated = await prisma.cartItem.update({
-    where: { id: existing.id },
-    data: { quantity: parsed.data.quantity },
+  const existing = await prisma.cartItem.findUnique({
+    where: { userId_productId: { userId: user.id, productId: product.id } },
   });
-  return NextResponse.json(updated);
-}
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ productId: string }> }) {
-  const resolvedParams = await params;
-  const user = await getOrCreateUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const item = existing
+    ? await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: existing.quantity + parsed.data.quantity },
+      })
+    : await prisma.cartItem.create({
+        data: { userId: user.id, productId: product.id, quantity: parsed.data.quantity },
+      });
 
-  await prisma.cartItem.deleteMany({
-    where: { userId: user.id, productId: resolvedParams.productId },
-  });
-  return NextResponse.json({ deleted: true });
+  return NextResponse.json(item, { status: 201 });
 }
