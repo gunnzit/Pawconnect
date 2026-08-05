@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   PawPrint,
@@ -17,6 +16,7 @@ import {
   Pencil,
   Check,
 } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 type Vaccination = { id: string; vaccineName: string; nextDueDate: string; dateGiven: string };
 type Booking = { id: string; type: string; status: string; startTime: string; provider: { user: { name: string } } };
@@ -46,9 +46,9 @@ function ageFromBirthday(birthday: string | null) {
   return years < 1 ? `${Math.round(years * 12)} mo` : `${Math.floor(years)} yr`;
 }
 
-const FIELD_META: { key: keyof Pet; label: string; icon: any; placeholder: string }[] = [
+const FIELD_META: { key: keyof Pet; label: string; icon: any; placeholder: string; multiline?: boolean }[] = [
   { key: "allergies", label: "Allergies", icon: ShieldAlert, placeholder: "e.g. chicken, pollen" },
-  { key: "medicalHistory", label: "Medical history", icon: FileText, placeholder: "Past conditions, surgeries, medications" },
+  { key: "medicalHistory", label: "Medical history", icon: FileText, placeholder: "Past conditions, surgeries, medications", multiline: true },
   { key: "favoriteTreats", label: "Favorite treats", icon: Cookie, placeholder: "e.g. peanut butter biscuits" },
   { key: "microchipId", label: "Microchip ID", icon: Cpu, placeholder: "Chip number" },
   { key: "insuranceProvider", label: "Insurance provider", icon: ShieldCheck, placeholder: "e.g. PetSecure" },
@@ -69,7 +69,6 @@ export default function PetProfileClient({ pet: initialPet }: { pet: Pet }) {
     insurancePolicy: pet.insurancePolicy ?? "",
   });
   const [saving, setSaving] = useState(false);
-  const router = useRouter();
 
   const save = async () => {
     setSaving(true);
@@ -93,21 +92,13 @@ export default function PetProfileClient({ pet: initialPet }: { pet: Pet }) {
   const age = ageFromBirthday(pet.birthday);
 
   return (
-    <main className="pb-16 max-w-2xl mx-auto" style={{ background: "var(--cream)", minHeight: "100vh" }}>
+    <main className="pb-28 max-w-2xl mx-auto" style={{ background: "var(--cream)", minHeight: "100vh" }}>
+      {/* ===== Header with clear back link ===== */}
       <div className="flex items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-3">
-          <Link href="/owner/pets" className="tap-scale">
-            <ArrowLeft size={20} />
-          </Link>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--tan)" }}>
-              Paw Passport
-            </p>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <PawPrint size={20} color="var(--tan)" /> {pet.name}
-            </h1>
-          </div>
-        </div>
+        <Link href="/owner/pets" className="flex items-center gap-2 tap-scale">
+          <ArrowLeft size={20} />
+          <span className="text-sm font-medium">Back to pets</span>
+        </Link>
         <button
           onClick={() => (editing ? save() : setEditing(true))}
           disabled={saving}
@@ -118,8 +109,24 @@ export default function PetProfileClient({ pet: initialPet }: { pet: Pet }) {
         </button>
       </div>
 
-      {/* Vitals row */}
-      <div className="px-6 grid grid-cols-3 gap-3 mb-8">
+      {/* ===== Identity ===== */}
+      <div className="px-6 flex items-center gap-4 mb-6">
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: "white", border: "1px solid var(--border)" }}
+        >
+          <PawPrint size={26} color="var(--tan)" />
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--tan)" }}>
+            Paw Passport
+          </p>
+          <h1 className="text-3xl font-bold">{pet.name}</h1>
+        </div>
+      </div>
+
+      {/* ===== Vitals row ===== */}
+      <div className="px-6 grid grid-cols-3 gap-3 mb-6">
         <div className="card flex flex-col items-center gap-1 py-4">
           <Cake size={18} color="var(--tan)" />
           {editing ? (
@@ -159,31 +166,47 @@ export default function PetProfileClient({ pet: initialPet }: { pet: Pet }) {
         </div>
       </div>
 
-      {/* Passport fields */}
-      <div className="px-6 space-y-3 mb-8">
-        {FIELD_META.map(({ key, label, icon: Icon, placeholder }) => (
-          <div key={key} className="card flex items-start gap-3">
-            <Icon size={16} color="var(--tan)" className="mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-xs font-semibold mb-1" style={{ color: "var(--muted)" }}>{label}</p>
-              {editing ? (
-                <textarea
-                  className="w-full text-sm border rounded-lg px-2 py-1.5"
-                  style={{ borderColor: "var(--border)" }}
-                  rows={key === "medicalHistory" ? 3 : 1}
-                  placeholder={placeholder}
-                  value={form[key as keyof typeof form] as string}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                />
-              ) : (
-                <p className="text-sm">{(pet[key] as string) || "—"}</p>
-              )}
+      {/* ===== Integrated passport card — one grouped list, not scattered boxes ===== */}
+      <div className="px-6 mb-8">
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          {FIELD_META.map(({ key, label, icon: Icon, placeholder, multiline }, i) => (
+            <div
+              key={key}
+              className="flex items-start gap-3 px-5 py-4"
+              style={i !== FIELD_META.length - 1 ? { borderBottom: "1px solid var(--border)" } : {}}
+            >
+              <Icon size={16} color="var(--tan)" className="mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs font-semibold mb-1" style={{ color: "var(--muted)" }}>{label}</p>
+                {editing ? (
+                  multiline ? (
+                    <textarea
+                      className="w-full text-sm border rounded-lg px-2 py-1.5"
+                      style={{ borderColor: "var(--border)" }}
+                      rows={3}
+                      placeholder={placeholder}
+                      value={form[key as keyof typeof form] as string}
+                      onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                    />
+                  ) : (
+                    <input
+                      className="w-full text-sm border rounded-lg px-2 py-1.5"
+                      style={{ borderColor: "var(--border)" }}
+                      placeholder={placeholder}
+                      value={form[key as keyof typeof form] as string}
+                      onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                    />
+                  )
+                ) : (
+                  <p className="text-sm">{(pet[key] as string) || "—"}</p>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Vaccination history */}
+      {/* ===== Vaccination history ===== */}
       <div className="px-6 mb-8">
         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
           <Syringe size={18} color="var(--tan)" /> Vaccinations
@@ -191,9 +214,13 @@ export default function PetProfileClient({ pet: initialPet }: { pet: Pet }) {
         {pet.vaccinations.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--muted)" }}>No vaccination records yet.</p>
         ) : (
-          <div className="space-y-2">
-            {pet.vaccinations.map((v) => (
-              <div key={v.id} className="card flex justify-between items-center">
+          <div className="card" style={{ padding: 0 }}>
+            {pet.vaccinations.map((v, i) => (
+              <div
+                key={v.id}
+                className="flex justify-between items-center px-5 py-3.5"
+                style={i !== pet.vaccinations.length - 1 ? { borderBottom: "1px solid var(--border)" } : {}}
+              >
                 <p className="font-medium text-sm">{v.vaccineName}</p>
                 <p className="text-xs" style={{ color: "var(--muted)" }}>
                   Due {new Date(v.nextDueDate).toDateString()}
@@ -204,15 +231,19 @@ export default function PetProfileClient({ pet: initialPet }: { pet: Pet }) {
         )}
       </div>
 
-      {/* Walking / staycation history */}
+      {/* ===== Care history ===== */}
       <div className="px-6">
         <h2 className="text-lg font-bold mb-4">Care history</h2>
         {pet.bookings.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--muted)" }}>No bookings yet.</p>
         ) : (
-          <div>
+          <div className="card" style={{ padding: 0 }}>
             {pet.bookings.map((b, i) => (
-              <div key={b.id} className={`flex justify-between items-center py-3 ${i !== pet.bookings.length - 1 ? "hairline" : ""}`}>
+              <div
+                key={b.id}
+                className="flex justify-between items-center px-5 py-3.5"
+                style={i !== pet.bookings.length - 1 ? { borderBottom: "1px solid var(--border)" } : {}}
+              >
                 <div>
                   <p className="text-sm font-medium">{b.type === "WALKING" ? "Adventure Walk" : "Home Staycation"}</p>
                   <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
@@ -227,6 +258,8 @@ export default function PetProfileClient({ pet: initialPet }: { pet: Pet }) {
           </div>
         )}
       </div>
+
+      <BottomNav />
     </main>
   );
 }
