@@ -1,15 +1,15 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateUser } from "@/lib/auth";
 
-const updateSchema = z.object({
-  name: z.string().min(1).optional(),
+const petSchema = z.object({
+  name: z.string().min(1),
   breed: z.string().optional(),
-  size: z.enum(["SMALL", "MEDIUM", "LARGE"]).optional(),
+  size: z.enum(["SMALL", "MEDIUM", "LARGE"]).default("MEDIUM"),
   temperament: z.string().optional(),
   notes: z.string().optional(),
-  birthday: z.string().optional(), // ISO date
+  birthday: z.string().optional(),
   weightKg: z.number().positive().optional(),
   allergies: z.string().optional(),
   medicalHistory: z.string().optional(),
@@ -19,49 +19,36 @@ const updateSchema = z.object({
   insurancePolicy: z.string().optional(),
 });
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
+export async function GET() {
   const user = await getOrCreateUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const pet = await prisma.pet.findFirst({
-    where: { id: resolvedParams.id, ownerId: user.id },
-    include: {
-      vaccinations: { orderBy: { nextDueDate: "asc" } },
-      bookings: {
-        include: { provider: { include: { user: true } } },
-        orderBy: { startTime: "desc" },
-      },
-    },
+  const pets = await prisma.pet.findMany({
+    where: { ownerId: user.id },
+    include: { vaccinations: true },
+    orderBy: { createdAt: "desc" },
   });
-  if (!pet) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  return NextResponse.json(pet);
+  return NextResponse.json(pets);
 }
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
+export async function POST(req: Request) {
   const user = await getOrCreateUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const existing = await prisma.pet.findFirst({ where: { id: resolvedParams.id, ownerId: user.id } });
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
   const body = await req.json();
-  const parsed = updateSchema.safeParse(body);
+  const parsed = petSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
   const { birthday, ...rest } = parsed.data;
 
-  const pet = await prisma.pet.update({
-    where: { id: resolvedParams.id },
+  const pet = await prisma.pet.create({
     data: {
       ...rest,
+      ownerId: user.id,
       ...(birthday ? { birthday: new Date(birthday) } : {}),
     },
   });
-
-  return NextResponse.json(pet);
+  return NextResponse.json(pet, { status: 201 });
 }
