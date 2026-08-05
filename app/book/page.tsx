@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldCheck, Star } from "lucide-react";
+import { ShieldCheck, Star, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import BottomNav from "@/components/BottomNav";
 
 type Provider = {
   id: string;
@@ -48,7 +50,11 @@ export default function BookPage() {
   };
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-10" style={{ background: "var(--cream, transparent)" }}>
+    <main className="max-w-3xl mx-auto px-6 py-10 pb-28" style={{ background: "var(--cream, transparent)" }}>
+      <Link href="/owner/dashboard" className="flex items-center gap-2 tap-scale mb-4" style={{ color: "var(--muted)" }}>
+        <ArrowLeft size={18} />
+        <span className="text-sm font-medium">Back to home</span>
+      </Link>
       <h1 className="text-2xl font-bold mb-6">Book a {SERVICE_LABEL[service].title}</h1>
 
       <div className="flex flex-wrap gap-3 mb-8">
@@ -101,6 +107,7 @@ export default function BookPage() {
           <p className="text-sm" style={{ color: "var(--muted)" }}>No verified providers yet for this service.</p>
         )}
       </div>
+      <BottomNav />
     </main>
   );
 }

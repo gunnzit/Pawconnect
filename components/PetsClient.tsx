@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronRight, ChevronDown, ArrowLeft } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 type Pet = {
   id: string;
@@ -64,7 +65,11 @@ export default function PetsClient() {
   const inputStyle = { borderColor: "var(--border)" };
 
   return (
-    <main className="max-w-2xl mx-auto px-6 py-10">
+    <main className="max-w-2xl mx-auto px-6 py-10 pb-28">
+      <Link href="/owner/dashboard" className="flex items-center gap-2 tap-scale mb-4" style={{ color: "var(--muted)" }}>
+        <ArrowLeft size={18} />
+        <span className="text-sm font-medium">Back to home</span>
+      </Link>
       <h1 className="text-2xl font-bold mb-6">Your pets</h1>
 
       <form onSubmit={addPet} className="card mb-8 space-y-3">
@@ -154,6 +159,8 @@ export default function PetsClient() {
           </Link>
         ))}
       </div>
+
+      <BottomNav />
     </main>
   );
 }
