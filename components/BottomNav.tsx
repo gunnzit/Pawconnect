@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PawPrint, Home, Syringe, Calendar, User } from "lucide-react";
+import { PawPrint, Home, Syringe, ShoppingBag, User } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/owner/dashboard", label: "Walks", icon: PawPrint },
   { href: "/book?service=SITTING", label: "Sitting", icon: Home },
   { href: "/owner/pets", label: "Vaccines", icon: Syringe },
-  { href: "/owner/bookings", label: "Bookings", icon: Calendar },
+  { href: "/accessories", label: "Shop", icon: ShoppingBag },
   { href: "/owner/profile", label: "Profile", icon: User },
 ];
 
