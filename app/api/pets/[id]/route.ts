@@ -9,7 +9,7 @@ const updateSchema = z.object({
   size: z.enum(["SMALL", "MEDIUM", "LARGE"]).optional(),
   temperament: z.string().optional(),
   notes: z.string().optional(),
-  birthday: z.string().optional(), // ISO date
+  birthday: z.string().optional(),
   weightKg: z.number().positive().optional(),
   allergies: z.string().optional(),
   medicalHistory: z.string().optional(),
