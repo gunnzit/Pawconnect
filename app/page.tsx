@@ -14,7 +14,6 @@ const NEEDS = [
 export default function Home() {
   return (
     <main className="pb-16" style={{ background: "var(--cream)" }}>
-      {/* ===== Nav ===== */}
       <nav className="flex justify-between items-center px-6 py-5 max-w-5xl mx-auto">
         <span className="text-lg font-bold flex items-center gap-2">
           <PawPrint size={20} color="var(--tan)" /> PawConnect
@@ -30,7 +29,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ===== Hero: "My pet needs..." ===== */}
       <section className="max-w-5xl mx-auto px-6 mb-6 animate-fade-up">
         <h1 className="text-4xl md:text-5xl font-bold mb-2 leading-tight">
           My pet needs<span style={{ color: "var(--tan)" }}>…</span>
@@ -44,13 +42,14 @@ export default function Home() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {NEEDS.map((need) => {
             const Icon = need.icon;
+            const Wrapper = need.soon ? "div" : Link;
+            const wrapperProps = need.soon ? {} : { href: need.href };
             return (
-              <Link
+              <Wrapper
                 key={need.label}
-                href={need.soon ? "#" : need.href}
+                {...(wrapperProps as any)}
                 className={`card flex flex-col items-center text-center gap-3 py-8 ${need.soon ? "" : "tap-scale"}`}
                 style={{ opacity: need.soon ? 0.55 : 1, cursor: need.soon ? "default" : "pointer" }}
-                onClick={(e) => { if (need.soon) e.preventDefault(); }}
               >
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center"
@@ -64,13 +63,12 @@ export default function Home() {
                     {need.soon ? "Coming soon" : need.sub}
                   </p>
                 </div>
-              </Link>
+              </Wrapper>
             );
           })}
         </div>
       </section>
 
-      {/* ===== Hero photo moment ===== */}
       <section className="max-w-5xl mx-auto px-6 mb-16 animate-fade-up">
         <div className="img-frame relative shadow-sm" style={{ minHeight: 320 }}>
           <Image src="/images/banner-instant-walk.jpg" alt="Happy dog on a walk" fill sizes="900px" className="object-cover" priority />
