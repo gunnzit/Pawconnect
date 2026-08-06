@@ -13,13 +13,13 @@ export default async function OwnerDashboard() {
   const [pets, bookings, allBookingsForRebook, upcomingVaccines, providers, bestSellers] = await Promise.all([
     prisma.pet.findMany({ where: { ownerId: user.id } }),
     prisma.booking.findMany({
-      where: { ownerId: user.id },
+      where: { ownerId: user.id, type: "WALKING" },
       include: { provider: { include: { user: true } }, pet: true },
       orderBy: { startTime: "desc" },
       take: 4,
     }),
     prisma.booking.findMany({
-      where: { ownerId: user.id },
+      where: { ownerId: user.id, type: "WALKING" },
       include: { provider: { include: { user: true } }, pet: true },
       orderBy: { startTime: "desc" },
       take: 20,
@@ -80,22 +80,11 @@ export default async function OwnerDashboard() {
         </div>
       </div>
 
-      {/* ===== Pill tabs ===== */}
+      {/* ===== Page label — this page is dedicated to Walking only ===== */}
       <div className="px-6 mt-6 mb-8 animate-fade-up" style={{ animationDelay: "120ms" }}>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
-          <Link href="/owner/dashboard" className="pill-tab active tap-scale flex items-center gap-1.5">
-            <PawPrint size={14} /> Adventure Walks
-          </Link>
-          <Link href="/book?service=SITTING" className="pill-tab tap-scale flex items-center gap-1.5">
-            <HomeIcon size={14} /> Home Staycation
-          </Link>
-          <Link href="/owner/pets" className="pill-tab tap-scale flex items-center gap-1.5">
-            <Syringe size={14} /> Vet &amp; Vaccines
-          </Link>
-          <Link href="/owner/bookings" className="pill-tab tap-scale">
-            Bookings
-          </Link>
-        </div>
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <PawPrint size={18} color="var(--terracotta)" /> Adventure Walks
+        </h2>
       </div>
 
       {/* ===== Offers — moving carousel ===== */}
