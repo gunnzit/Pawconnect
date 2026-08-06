@@ -3,12 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { PawPrint, Home, Syringe, ShoppingBag, User } from "lucide-react";
+import { House, PawPrint, BedDouble, Syringe, ShoppingBag, User } from "lucide-react";
 
 export default function BottomNav() {
   const pathname = usePathname();
-  // Read ?service= directly from the browser instead of useSearchParams(), which
-  // avoids forcing every page that renders this nav into a Suspense boundary.
   const [currentService, setCurrentService] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,6 +19,12 @@ export default function BottomNav() {
 
   const items = [
     {
+      href: "/",
+      label: "Home",
+      icon: House,
+      active: pathname === "/",
+    },
+    {
       href: "/owner/dashboard",
       label: "Walks",
       icon: PawPrint,
@@ -29,7 +33,7 @@ export default function BottomNav() {
     {
       href: "/book?service=SITTING",
       label: "Sitting",
-      icon: Home,
+      icon: BedDouble,
       active: isBook && currentService === "SITTING",
     },
     {
@@ -44,12 +48,6 @@ export default function BottomNav() {
       icon: ShoppingBag,
       active: pathname === "/accessories",
     },
-    {
-      href: "/owner/profile",
-      label: "Profile",
-      icon: User,
-      active: pathname === "/owner/profile",
-    },
   ];
 
   return (
@@ -58,7 +56,7 @@ export default function BottomNav() {
         const Icon = item.icon;
         return (
           <Link key={item.label} href={item.href} className={`tap-scale ${item.active ? "active" : ""}`}>
-            <Icon size={20} strokeWidth={item.active ? 2.5 : 2} />
+            <Icon size={19} strokeWidth={item.active ? 2.5 : 2} />
             {item.label}
           </Link>
         );

@@ -66,7 +66,7 @@ export default function PetsClient() {
 
   return (
     <main className="max-w-2xl mx-auto px-6 py-10 pb-28">
-      <Link href="/owner/dashboard" className="flex items-center gap-2 tap-scale mb-4" style={{ color: "var(--muted)" }}>
+      <Link href="/" className="flex items-center gap-2 tap-scale mb-4" style={{ color: "var(--muted)" }}>
         <ArrowLeft size={18} />
         <span className="text-sm font-medium">Back to home</span>
       </Link>

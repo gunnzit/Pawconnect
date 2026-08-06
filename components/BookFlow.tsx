@@ -74,7 +74,7 @@ export default function BookFlow() {
             <ArrowLeft size={20} />
           </button>
         ) : (
-          <Link href="/owner/dashboard" className="tap-scale">
+          <Link href="/" className="tap-scale">
             <ArrowLeft size={20} />
           </Link>
         )}
@@ -207,7 +207,7 @@ export default function BookFlow() {
               <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
                 You'll be notified once they accept.
               </p>
-              <Link href="/owner/dashboard" className="btn-primary inline-block">Back to home</Link>
+              <Link href="/" className="btn-primary inline-block">Back to home</Link>
             </div>
           ) : (
             <>
