@@ -89,6 +89,7 @@ function BookFlow() {
         </div>
       </div>
 
+      {/* ===== Step 0: Service ===== */}
       {step === 0 && (
         <div className="animate-fade-up">
           <h1 className="text-2xl font-bold mb-1">What does your pet need?</h1>
@@ -120,6 +121,7 @@ function BookFlow() {
         </div>
       )}
 
+      {/* ===== Step 1: Pet ===== */}
       {step === 1 && (
         <div className="animate-fade-up">
           <h1 className="text-2xl font-bold mb-1">For which pet?</h1>
@@ -155,6 +157,7 @@ function BookFlow() {
         </div>
       )}
 
+      {/* ===== Step 2: Time ===== */}
       {step === 2 && (
         <div className="animate-fade-up">
           <h1 className="text-2xl font-bold mb-1">When?</h1>
@@ -192,6 +195,7 @@ function BookFlow() {
         </div>
       )}
 
+      {/* ===== Step 3: Match ===== */}
       {step === 3 && (
         <div className="animate-fade-up">
           {booked ? (
