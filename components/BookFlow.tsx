@@ -51,7 +51,7 @@ export default function BookFlow() {
   }, [service, step]);
 
   const goNext = () => setStep((s) => Math.min(s + 1, 3));
-  const goBack = () => setStep((s) => Math.max(s - 1, 0));
+  const goBack = () => setStep((s) => Math.max(s - 1, preselected ? 1 : 0));
 
   const requestBooking = async (providerId: string) => {
     setSubmitting(true);
@@ -69,7 +69,7 @@ export default function BookFlow() {
   return (
     <main className="max-w-lg mx-auto px-6 py-8 pb-28" style={{ background: "var(--cream)", minHeight: "100vh" }}>
       <div className="flex items-center gap-3 mb-6">
-        {step > 0 ? (
+        {step > (preselected ? 1 : 0) ? (
           <button onClick={goBack} className="tap-scale">
             <ArrowLeft size={20} />
           </button>
@@ -89,6 +89,7 @@ export default function BookFlow() {
         </div>
       </div>
 
+      {/* ===== Step 0: Service ===== */}
       {step === 0 && (
         <div className="animate-fade-up">
           <h1 className="text-2xl font-bold mb-1">What does your pet need?</h1>
@@ -120,6 +121,7 @@ export default function BookFlow() {
         </div>
       )}
 
+      {/* ===== Step 1: Pet ===== */}
       {step === 1 && (
         <div className="animate-fade-up">
           <h1 className="text-2xl font-bold mb-1">For which pet?</h1>
@@ -155,6 +157,7 @@ export default function BookFlow() {
         </div>
       )}
 
+      {/* ===== Step 2: Time ===== */}
       {step === 2 && (
         <div className="animate-fade-up">
           <h1 className="text-2xl font-bold mb-1">When?</h1>
@@ -192,6 +195,7 @@ export default function BookFlow() {
         </div>
       )}
 
+      {/* ===== Step 3: Match ===== */}
       {step === 3 && (
         <div className="animate-fade-up">
           {booked ? (
