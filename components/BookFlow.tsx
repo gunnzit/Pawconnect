@@ -66,11 +66,19 @@ export default function BookFlow() {
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         setCoords({ lat, lng });
-        setAddress(`Current location (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+          );
+          const data = await res.json();
+          setAddress(data?.display_name || `Current location (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+        } catch {
+          setAddress(`Current location (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+        }
         setLocating(false);
       },
       () => {
