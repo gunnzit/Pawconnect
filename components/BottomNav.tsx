@@ -5,18 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PawPrint, Home, Syringe, ShoppingBag, User } from "lucide-react";
 
-const NAV_ITEMS = [
-  { href: "/owner/dashboard", label: "Walks", icon: PawPrint, service: "WALKING" },
-  { href: "/book?service=SITTING", label: "Sitting", icon: Home, service: "SITTING" },
-  { href: "/owner/pets", label: "Vaccines", icon: Syringe, service: null },
-  { href: "/accessories", label: "Shop", icon: ShoppingBag, service: null },
-  { href: "/owner/profile", label: "Profile", icon: User, service: null },
-];
-
 export default function BottomNav() {
   const pathname = usePathname();
-  // Read the ?service= query directly from the browser instead of useSearchParams(),
-  // which avoids requiring a Suspense boundary on every page that renders this nav.
+  // Read ?service= directly from the browser instead of useSearchParams(), which
+  // avoids forcing every page that renders this nav into a Suspense boundary.
   const [currentService, setCurrentService] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,18 +17,48 @@ export default function BottomNav() {
     }
   }, [pathname]);
 
+  const isBook = pathname === "/book";
+
+  const items = [
+    {
+      href: "/owner/dashboard",
+      label: "Walks",
+      icon: PawPrint,
+      active: pathname === "/owner/dashboard" || (isBook && currentService === "WALKING"),
+    },
+    {
+      href: "/book?service=SITTING",
+      label: "Sitting",
+      icon: Home,
+      active: isBook && currentService === "SITTING",
+    },
+    {
+      href: "/owner/pets",
+      label: "Vaccines",
+      icon: Syringe,
+      active: pathname === "/owner/pets",
+    },
+    {
+      href: "/accessories",
+      label: "Shop",
+      icon: ShoppingBag,
+      active: pathname === "/accessories",
+    },
+    {
+      href: "/owner/profile",
+      label: "Profile",
+      icon: User,
+      active: pathname === "/owner/profile",
+    },
+  ];
+
   return (
     <nav className="bottom-nav">
-      {NAV_ITEMS.map((item) => {
-        const itemPath = item.href.split("?")[0];
-        const active =
-          pathname === "/book"
-            ? currentService === item.service
-            : item.service === null && pathname === itemPath;
+      {items.map((item) => {
         const Icon = item.icon;
         return (
-          <Link key={item.href} href={item.href} className={`tap-scale ${active ? "active" : ""}`}>
-            <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+          <Link key={item.label} href={item.href} className={`tap-scale ${item.active ? "active" : ""}`}>
+            <Icon size={20} strokeWidth={item.active ? 2.5 : 2} />
             {item.label}
           </Link>
         );
