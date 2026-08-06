@@ -36,6 +36,11 @@ export default function BookFlow() {
   const [selectedPet, setSelectedPet] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState("");
   const [providers, setProviders] = useState<Provider[]>([]);
   const [booked, setBooked] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -53,12 +58,44 @@ export default function BookFlow() {
   const goNext = () => setStep((s) => Math.min(s + 1, 3));
   const goBack = () => setStep((s) => Math.max(s - 1, preselected ? 1 : 0));
 
+  const detectLocation = () => {
+    setLocationError("");
+    if (!navigator.geolocation) {
+      setLocationError("Location isn't available on this device — enter your address instead.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setCoords({ lat, lng });
+        setAddress(`Current location (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+        setLocating(false);
+      },
+      () => {
+        setLocationError("Couldn't access your location — enter your address instead.");
+        setLocating(false);
+      }
+    );
+  };
+
   const requestBooking = async (providerId: string) => {
     setSubmitting(true);
     const res = await fetch("/api/bookings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ providerId, petId: selectedPet, type: service, startTime: start, endTime: end }),
+      body: JSON.stringify({
+        providerId,
+        petId: selectedPet,
+        type: service,
+        startTime: start,
+        endTime: end,
+        address,
+        phone,
+        latitude: coords?.lat,
+        longitude: coords?.lng,
+      }),
     });
     if (res.ok) setBooked(providerId);
     setSubmitting(false);
@@ -162,7 +199,7 @@ export default function BookFlow() {
         <div className="animate-fade-up">
           <h1 className="text-2xl font-bold mb-1">When?</h1>
           <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>For {selectedPetObj?.name}</p>
-          <div className="card space-y-4">
+          <div className="card space-y-4 mb-4">
             <div>
               <label className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Start</label>
               <input
@@ -183,15 +220,53 @@ export default function BookFlow() {
                 onChange={(e) => setEnd(e.target.value)}
               />
             </div>
-            <button
-              onClick={goNext}
-              disabled={!start || !end}
-              className="btn-primary w-full tap-scale"
-              style={{ opacity: !start || !end ? 0.5 : 1 }}
-            >
-              Find a match
-            </button>
           </div>
+
+          <div className="card space-y-4 mb-4">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Location</label>
+              <button
+                type="button"
+                onClick={detectLocation}
+                disabled={locating}
+                className="text-xs font-semibold tap-scale"
+                style={{ color: "var(--terracotta, var(--tan))" }}
+              >
+                {locating ? "Locating…" : "Use my location"}
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Address"
+              className="w-full border rounded-xl px-3 py-2 text-sm"
+              style={{ borderColor: "var(--border)" }}
+              value={address}
+              onChange={(e) => { setAddress(e.target.value); setCoords(null); }}
+            />
+            {locationError && (
+              <p className="text-xs" style={{ color: "var(--terracotta, var(--tan))" }}>{locationError}</p>
+            )}
+            <div>
+              <label className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Mobile number</label>
+              <input
+                type="tel"
+                placeholder="For the handler to reach you"
+                className="w-full border rounded-xl px-3 py-2 text-sm mt-1"
+                style={{ borderColor: "var(--border)" }}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={goNext}
+            disabled={!start || !end || !address || !phone}
+            className="btn-primary w-full tap-scale"
+            style={{ opacity: !start || !end || !address || !phone ? 0.5 : 1 }}
+          >
+            Find a match
+          </button>
         </div>
       )}
 

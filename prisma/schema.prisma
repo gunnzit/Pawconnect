@@ -122,6 +122,10 @@ model Booking {
   startTime    DateTime
   endTime      DateTime
   priceAmount  Int // paise
+  address      String?
+  phone        String?
+  latitude     Float?
+  longitude    Float?
   razorpayOrderId String?
   paidAt       DateTime?
   createdAt    DateTime      @default(now())
