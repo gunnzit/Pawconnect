@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrCreateUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
+import EmergencyButton from "@/components/EmergencyButton";
 import { Search, Syringe, Home as HomeIcon, PawPrint, ChevronRight, Star, ShieldCheck, RotateCcw, ShoppingBag, User } from "lucide-react";
 
 export default async function OwnerDashboard() {
@@ -62,6 +63,7 @@ export default async function OwnerDashboard() {
 
   return (
     <main className="pb-28 max-w-2xl mx-auto">
+      <EmergencyButton />
       {/* ===== Hero photo moment ===== */}
       <div className="relative w-full animate-fade-up" style={{ height: 280 }}>
         <Image src="/images/banner-instant-walk.jpg" alt="" fill sizes="700px" className="object-cover" priority />

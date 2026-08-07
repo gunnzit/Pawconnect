@@ -77,7 +77,7 @@ export default function CartClient() {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <main className="pb-28 max-w-2xl mx-auto" style={{ background: "var(--cream)", minHeight: "100vh" }}>
         <div className="flex items-center gap-3 px-6 py-5">
-          <Link href="/accessories" className="tap-scale">
+          <Link href="/" className="tap-scale">
             <ArrowLeft size={20} />
           </Link>
           <h1 className="text-xl font-bold flex items-center gap-2">
