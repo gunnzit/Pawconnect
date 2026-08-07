@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, PawPrint, Home as HomeIcon, ShieldCheck, Star, Check } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import WalkTransition from "@/components/WalkTransition";
 
 type Provider = {
   id: string;
@@ -41,6 +42,7 @@ export default function BookFlow() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState("");
+  const [showWalkAnim, setShowWalkAnim] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [booked, setBooked] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -111,6 +113,18 @@ export default function BookFlow() {
 
   const selectedPetObj = pets.find((p) => p.id === selectedPet);
 
+  if (showWalkAnim) {
+    return (
+      <WalkTransition
+        onDone={() => {
+          setShowWalkAnim(false);
+          setService("WALKING");
+          goNext();
+        }}
+      />
+    );
+  }
+
   return (
     <main className="max-w-lg mx-auto px-6 py-8 pb-28" style={{ background: "var(--cream)", minHeight: "100vh" }}>
       <div className="flex items-center gap-3 mb-6">
@@ -145,7 +159,14 @@ export default function BookFlow() {
               return (
                 <button
                   key={s.type}
-                  onClick={() => { setService(s.type); goNext(); }}
+                  onClick={() => {
+                    if (s.type === "WALKING") {
+                      setShowWalkAnim(true);
+                    } else {
+                      setService(s.type);
+                      goNext();
+                    }
+                  }}
                   className="w-full rounded-2xl overflow-hidden relative tap-scale text-left"
                   style={{ height: 120 }}
                 >
